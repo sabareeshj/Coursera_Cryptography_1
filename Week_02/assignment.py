@@ -1,5 +1,7 @@
 from Crypto.Cipher import AES
 from Crypto.Util import Counter
+from Crypto.Util.number import bytes_to_long
+import sys
 
 cbcCiphers = [('140b41b22a29beb4061bda66b6747e14','4ca00ff4c898d61e1edbf1800618fb2828a226d160dad07883d04e008a7897ee2e4b7465d5290d0c0e6c6822236e1daafb94ffe0c5da05d9476be028ad7c1d81'),('140b41b22a29beb4061bda66b6747e14','5b68629feb8606f9a6667670b75b38a5b4832d0f26e1ab7da33249de7d4afc48e713ac646ace36e872ad5fb8a512428a6e21364b0c374df45503473c5242a253')]
 
@@ -49,3 +51,28 @@ for i in range(len(cbcCiphers)):
     plaintext = plaintext[:-plaintext[-1]]
 
     print('The plaintext derived using the CBC implementation is ' + '\"' + plaintext.decode() + '\"')
+
+for i in range(len(ctrCiphers)):
+
+    ctrKey = bytes.fromhex(ctrCiphers[i][0])
+    ctrCipherText = bytes.fromhex(ctrCiphers[i][1])
+    ctrIV = ctrCipherText[:16]
+    ctrCipherText = ctrCipherText[16:]
+    ctr = Counter.new(128, initial_value = bytes_to_long(ctrIV))
+    aes = AES.new(ctrKey, AES.MODE_CTR, counter=ctr)
+    plaintext = aes.decrypt(ctrCipherText)
+    print('The plain text derived using AES CTR library  is ' +  '\"' + plaintext.decode() + '\"')
+
+    #AES implemetation using ECB
+    aes = AES.new(ctrKey, AES.MODE_ECB)
+    plaintext = bytes()
+    cipherBlocks = [ctrCipherText[i: i+16] for i in range(0, len(ctrCipherText), 16)]
+    ctr = ctrIV.hex()
+    ctr = int(ctr, 16)
+    for j in range(len(cipherBlocks)):
+        # creating a stream cipher andperforming XOR while incrementing counter
+        plaintext += xorb(cipherBlocks[j], aes.encrypt(bytes.fromhex(hex(ctr+ j)[2:])))
+    print('The plain text derived using AES CTR implementation  is ' +  '\"' + plaintext.decode() + '\"')
+
+
+
