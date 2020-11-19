@@ -1,5 +1,3 @@
-# read the video file in 1kbs
-#append them to a array
 from Crypto.Hash import SHA256
 
 video = open('6.1.intro.mp4_download', 'rb')
